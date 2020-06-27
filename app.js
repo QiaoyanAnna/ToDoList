@@ -1,47 +1,44 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const date = require(__dirname + "/date.js");
 
 const app = express();
 
+const tasks = ["Buy Food", "Cook Food", "Eat Food"];
+const workTasks = [];
+
 app.set("view engine", "ejs");
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
+app.use(express.static("public"));
 
-app.get("/", function(req, res){
-  var today = new Date();
-  var currentDay = today.getDay();
-  var day = "";
-
-  switch (currentDay) {
-    case 0:
-      day = "Sunday";
-      break;
-    case 1:
-      day = "Monday";
-      break;
-    case 2:
-      day = "Tuesday";
-      break;
-    case 3:
-      day = "Wednesday";
-      break;
-    case 4:
-      day = "Thursday";
-      break;
-    case 5:
-      day = "Friday";
-      break;
-    case 6:
-      day = "Saturday";
-      break;
-    default:
-      console.log("Error: current day is equal to " + currentDay);
-  }
+app.get("/", function(req, res) {
+  const day = date.getDate();
 
   res.render("list", {
-    kindOfDay: day
+    listTitle: day,
+    tasks: tasks
   });
-
 });
 
-app.listen(3000, function(){
+app.post("/", function(req, res) {
+  if (req.body.list === "Work") {
+    workTasks.push(req.body.newTask);
+    res.redirect("/work");
+  } else {
+    tasks.push(req.body.newTask);
+    res.redirect("/");
+  }
+})
+
+app.get("/work", function(req, res) {
+  res.render("list", {
+    listTitle: "Work List",
+    tasks: workTasks
+  })
+})
+
+app.listen(3000, function() {
   console.log("Server started on port 3000.");
 })
